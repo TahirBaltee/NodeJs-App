@@ -5,14 +5,15 @@ pipeline {
         IMAGE_NAME = "nodejs-app"
         CONTAINER_NAME = "my-node-container"
         APP_PORT = "3000"
+        REPO_URL = "https://github.com/TahirBaltee/NodeJs-App.git"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh 'rm -rf NodeJs-App || true'
-                    sh 'git clone https://github.com/TahirBaltee/NodeJs-App.git'
+                    sh 'rm -rf NodeJs-App || true'  // Remove old repo if exists
+                    sh 'git clone ${REPO_URL}'
                 }
             }
         }
