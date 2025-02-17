@@ -6,13 +6,13 @@ pipeline {
         CONTAINER_NAME = "my-node-container"
         APP_PORT = "3000"
         REPO_URL = "https://github.com/TahirBaltee/NodeJs-App.git"
+        CREDENTIALS_ID = "Node-pipeline" // Make sure this matches your Jenkins credentials ID
     }
 
     stages {
         stage('Check Prerequisites') {
             steps {
                 script {
-                    // Remove 'sudo' and check if Git & Docker are installed
                     sh '''
                         echo "Checking prerequisites..."
 
@@ -37,11 +37,15 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh '''
-                        echo "Cloning repository..."
-                        rm -rf NodeJs-App || true
-                        git clone ${REPO_URL} NodeJs-App
-                    ''' 
+                    echo "Cloning repository from GitHub..."
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        userRemoteConfigs: [[
+                            url: env.REPO_URL,
+                            credentialsId: env.CREDENTIALS_ID
+                        ]]
+                    ])
                 }
             }
         }
@@ -51,8 +55,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Building Docker Image..."
-                        cd NodeJs-App
-                        docker build -t ${IMAGE_NAME} .
+                        docker build -t ${env.IMAGE_NAME} .
                     ''' 
                 }
             }
@@ -62,10 +65,10 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        if docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}; then
+                        if docker ps -a --format '{{.Names}}' | grep -w ${env.CONTAINER_NAME}; then
                             echo "Stopping and Removing Existing Container..."
-                            docker stop ${CONTAINER_NAME} || true
-                            docker rm ${CONTAINER_NAME} || true
+                            docker stop ${env.CONTAINER_NAME} || true
+                            docker rm ${env.CONTAINER_NAME} || true
                         else
                             echo "No existing container found. Skipping..."
                         fi
@@ -79,7 +82,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Running New Container..."
-                        docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}
+                        docker run -d -p ${env.APP_PORT}:${env.APP_PORT} --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
                     ''' 
                 }
             }
