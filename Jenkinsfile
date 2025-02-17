@@ -52,13 +52,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+   stage('Build Docker Image') {
     steps {
         script {
-            sh '''
+            sh """
                 echo "Building Docker Image..."
-                docker build -t '$IMAGE_NAME' .
-            '''
+                docker build -t ${IMAGE_NAME} .
+            """
         }
     }
 }
