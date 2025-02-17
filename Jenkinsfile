@@ -12,15 +12,22 @@ pipeline {
         stage('Check Prerequisites') {
             steps {
                 script {
-                    // Ensure Git and Docker are installed
+                    // Remove 'sudo' and check if Git & Docker are installed
                     sh '''
+                        echo "Checking prerequisites..."
+
                         if ! command -v git &> /dev/null; then 
-                            echo "Git not found. Installing..."; 
-                            sudo apt update && sudo apt install -y git; 
+                            echo "❌ Git is not installed. Please install it manually."
+                            exit 1
+                        else
+                            echo "✅ Git is installed."
                         fi
 
                         if ! command -v docker &> /dev/null; then 
-                            echo "Docker not found!"; exit 1; 
+                            echo "❌ Docker is not installed. Please install Docker and restart Jenkins."
+                            exit 1
+                        else
+                            echo "✅ Docker is installed."
                         fi
                     '''
                 }
@@ -31,10 +38,9 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Use BASH to avoid bad substitution error
                         echo "Cloning repository..."
                         rm -rf NodeJs-App || true
-                        git clone '${REPO_URL}' NodeJs-App
+                        git clone ${REPO_URL} NodeJs-App
                     ''' 
                 }
             }
@@ -44,10 +50,9 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Ensure we use bash
                         echo "Building Docker Image..."
                         cd NodeJs-App
-                        docker build -t '${IMAGE_NAME}' .
+                        docker build -t ${IMAGE_NAME} .
                     ''' 
                 }
             }
@@ -57,11 +62,10 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Ensure we use bash
-                        if docker ps -a --format '{{.Names}}' | grep -w '${CONTAINER_NAME}'; then
+                        if docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}; then
                             echo "Stopping and Removing Existing Container..."
-                            docker stop '${CONTAINER_NAME}' || true
-                            docker rm '${CONTAINER_NAME}' || true
+                            docker stop ${CONTAINER_NAME} || true
+                            docker rm ${CONTAINER_NAME} || true
                         else
                             echo "No existing container found. Skipping..."
                         fi
@@ -74,9 +78,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Ensure we use bash
                         echo "Running New Container..."
-                        docker run -d -p '${APP_PORT}':'${APP_PORT}' --name '${CONTAINER_NAME}' '${IMAGE_NAME}'
+                        docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}
                     ''' 
                 }
             }
