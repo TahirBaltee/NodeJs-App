@@ -6,7 +6,7 @@ pipeline {
         CONTAINER_NAME = "my-node-container"
         APP_PORT = "3000"
         REPO_URL = "https://github.com/TahirBaltee/NodeJs-App.git"
-        CREDENTIALS_ID = "Node-pipeline" // Make sure this matches your Jenkins credentials ID
+        CREDENTIALS_ID = "Node-pipeline" // Ensure this matches your Jenkins credentials ID
     }
 
     stages {
@@ -15,19 +15,21 @@ pipeline {
                 script {
                     sh '''
                         echo "Checking prerequisites..."
-
-                        if ! command -v git &> /dev/null; then 
+                        
+                        # Corrected Git Check
+                        if command -v git >/dev/null 2>&1; then
+                            echo "✅ Git is installed."
+                        else
                             echo "❌ Git is not installed. Please install it manually."
                             exit 1
-                        else
-                            echo "✅ Git is installed."
                         fi
 
-                        if ! command -v docker &> /dev/null; then 
+                        # Corrected Docker Check
+                        if command -v docker >/dev/null 2>&1; then
+                            echo "✅ Docker is installed."
+                        else
                             echo "❌ Docker is not installed. Please install Docker and restart Jenkins."
                             exit 1
-                        else
-                            echo "✅ Docker is installed."
                         fi
                     '''
                 }
