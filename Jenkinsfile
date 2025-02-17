@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "nodejs-app"
         CONTAINER_NAME = "my-node-container"
         APP_PORT = "3000"
+        REPO_DIR = "NodeJs-App"
         REPO_URL = "https://github.com/TahirBaltee/NodeJs-App.git"
     }
 
@@ -12,8 +13,8 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh 'rm -rf NodeJs-App || true'  // Remove old repo if exists
-                    sh 'git clone ${REPO_URL}'
+                    sh "rm -rf ${REPO_DIR} || true"
+                    sh "git clone ${REPO_URL} ${REPO_DIR}"
                 }
             }
         }
@@ -21,7 +22,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'cd NodeJs-App && docker build -t ${IMAGE_NAME} .'
+                    sh "cd ${REPO_DIR} && docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
@@ -29,8 +30,8 @@ pipeline {
         stage('Stop & Remove Existing Container') {
             steps {
                 script {
-                    sh 'docker stop ${CONTAINER_NAME} || true'
-                    sh 'docker rm ${CONTAINER_NAME} || true'
+                    sh "docker stop ${CONTAINER_NAME} || true"
+                    sh "docker rm ${CONTAINER_NAME} || true"
                 }
             }
         }
@@ -38,7 +39,7 @@ pipeline {
         stage('Run New Container') {
             steps {
                 script {
-                    sh 'docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}'
+                    sh "docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}"
                 }
             }
         }
@@ -46,10 +47,10 @@ pipeline {
 
     post {
         success {
-            echo "Deployment Successful!"
+            echo "✅ Deployment Successful!"
         }
         failure {
-            echo "Deployment Failed!"
+            echo "❌ Deployment Failed!"
         }
     }
 }
