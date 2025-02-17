@@ -13,7 +13,7 @@ pipeline {
             steps {
                 script {
                     sh 'rm -rf NodeJs-App || true'  // Remove old repo if exists
-                    sh 'git clone ${REPO_URL} NodeJs-App'
+                    sh 'git clone ${env.REPO_URL} NodeJs-App'
                 }
             }
         }
@@ -21,7 +21,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'cd NodeJs-App && docker build -t ${IMAGE_NAME} .'
+                    sh '''
+                        cd NodeJs-App && \
+                        docker build -t ${env.IMAGE_NAME} .
+                    '''
                 }
             }
         }
@@ -29,11 +32,10 @@ pipeline {
         stage('Stop & Remove Existing Container') {
             steps {
                 script {
-                    // 🔹 Force stop the container (ignores errors if not running)
-                    sh 'docker stop ${CONTAINER_NAME} || true'
-                    
-                    // 🔹 Force remove the container (ignores errors if not present)
-                    sh 'docker rm -f ${CONTAINER_NAME} || true'
+                    sh '''
+                        docker stop ${env.CONTAINER_NAME} || true
+                        docker rm -f ${env.CONTAINER_NAME} || true
+                    '''
                 }
             }
         }
@@ -41,7 +43,9 @@ pipeline {
         stage('Run New Container') {
             steps {
                 script {
-                    sh 'docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}'
+                    sh '''
+                        docker run -d --rm -p ${env.APP_PORT}:${env.APP_PORT} --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
+                    '''
                 }
             }
         }
