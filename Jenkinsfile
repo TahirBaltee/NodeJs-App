@@ -79,16 +79,17 @@ pipeline {
             }
         }
 
-        stage('Run New Container') {
-            steps {
-                script {
-                    sh '''
-                        echo "Running New Container..."
-                        docker run -d -p ${env.APP_PORT}:${env.APP_PORT} --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}
-                    ''' 
-                }
-            }
+     stage('Run New Container') {
+    steps {
+        script {
+            sh """
+                echo "Running New Container..."
+                docker run -d -p ${APP_PORT}:${APP_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}
+            """
         }
+    }
+}
+
     }
 
     post {
