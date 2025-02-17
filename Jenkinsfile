@@ -53,15 +53,15 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            steps {
-                script {
-                    sh '''
-                        echo "Building Docker Image..."
-                        docker build -t ${env.IMAGE_NAME} .
-                    ''' 
-                }
-            }
+    steps {
+        script {
+            sh '''
+                echo "Building Docker Image..."
+                docker build -t '$IMAGE_NAME' .
+            '''
         }
+    }
+}
 
         stage('Stop & Remove Existing Container') {
             steps {
