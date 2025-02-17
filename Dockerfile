@@ -1,16 +1,10 @@
 FROM node
-
 WORKDIR /app
 
-# Copy package.json and package-lock.json, then install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install  # Install dependencies
 
-# Copy the rest of the application files
-COPY . .
+COPY . .  # Copy all files
 
-# Expose the application port
 EXPOSE 3000
-
-# Use npm start to run the application
-ENTRYPOINT ["npm", "start"]
+CMD ["npm", "start"]
