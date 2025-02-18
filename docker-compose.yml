@@ -14,4 +14,9 @@ services:
     volumes:
       - .:/app  # Mount current directory for live changes (optional)
       - /app/node_modules  # Prevent overwriting node_modules
+    networks:
+      - nodejs_network  # Ensuring it's part of the same network
 
+networks:
+  nodejs_network:
+    driver: bridge
