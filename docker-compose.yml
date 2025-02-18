@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  node-app:
+    container_name: my-node-container
+    build: .
+    ports:
+      - "3000:3000"
+    restart: always
