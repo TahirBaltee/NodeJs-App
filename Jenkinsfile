@@ -7,6 +7,7 @@ pipeline {
         APP_PORT = "3000"
         REPO_URL = "https://github.com/TahirBaltee/NodeJs-App.git"
         CREDENTIALS_ID = "Node-pipeline"
+        COMPOSE_FILE = "docker-compose.yml"  // Ensure correct Docker Compose file
     }
 
     stages {
@@ -41,7 +42,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Building Docker Image using Docker Compose..."
-                        docker-compose build
+                        docker-compose -f ${COMPOSE_FILE} build
                     '''
                 }
             }
@@ -51,12 +52,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        if docker ps -a --format '{{.Names}}' | grep -w my-node-container; then
-                            echo "Stopping and Removing Existing Container..."
-                            docker-compose down
-                        else
-                            echo "No existing container found. Skipping..."
-                        fi
+                        echo "Stopping and Removing Existing Container..."
+                        docker-compose -f ${COMPOSE_FILE} down || true
                     '''
                 }
             }
@@ -67,7 +64,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Running New Container using Docker Compose..."
-                        docker-compose up -d
+                        docker-compose -f ${COMPOSE_FILE} up -d
                     '''
                 }
             }
