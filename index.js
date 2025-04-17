@@ -1,53 +1,44 @@
-const express = require('express');
-const app = express();
-const request = require('request');
-const wikip = require('wiki-infobox-parser');
+app.get('/index', (req, response) => {
+    if (!req.query.person) {
+        return response.status(400).send('Missing person parameter');
+    }
 
-//ejs
-app.set("view engine", 'ejs');
-
-//routes
-app.get('/', (req,res) =>{
-    res.render('index');
-});
-
-app.get('/index', (req,response) =>{
-    let url = "https://en.wikipedia.org/w/api.php"
-    let params = {
+    const url = "https://en.wikipedia.org/w/api.php";
+    const params = {
         action: "opensearch",
         search: req.query.person,
         limit: "1",
         namespace: "0",
         format: "json"
-    }
+    };
 
-    url = url + "?"
-    Object.keys(params).forEach( (key) => {
-        url += '&' + key + '=' + params[key]; 
-    });
-
-    //get wikip search string
-    request(url,(err,res, body) =>{
-        if(err) {
-            response.redirect('404');
+    request({url, qs: params, timeout: 5000}, (err, res, body) => {
+        if (err) {
+            console.error('API request failed:', err);
+            return response.status(502).send('Wikipedia API unavailable');
         }
-            result = JSON.parse(body);
-            x = result[3][0];
-            x = x.substring(30, x.length); 
-            //get wikip json
-            wikip(x , (err, final) => {
-                if (err){
-                    response.redirect('404');
+
+        try {
+            const result = JSON.parse(body);
+            
+            // Validate response structure
+            if (!result[3] || !result[3][0]) {
+                console.warn('No results found for:', req.query.person);
+                return response.status(404).send('No Wikipedia article found');
+            }
+
+            const articleUrl = result[3][0];
+            wikip(articleUrl, (err, final) => {
+                if (err) {
+                    console.error('Infobox parsing failed:', err);
+                    return response.status(500).send('Infobox parse error');
                 }
-                else{
-                    const answers = final;
-                    response.send(answers);
-                }
+                response.json(final);
             });
+
+        } catch (parseError) {
+            console.error('Response parsing failed:', parseError);
+            response.status(502).send('Invalid API response');
+        }
     });
-
-    
 });
-
-//port
-app.listen(3000, console.log("Listening at port 3000..."))
