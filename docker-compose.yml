@@ -1,39 +1,31 @@
-version: '3.8'
-
 services:
-  node-app:
-    container_name: my-node-container
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    restart: always
-    environment:
-      - NODE_ENV=production
-      - MONGO_URL=mongodb://mongodb:27017/mydb  # Connect to MongoDB
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    networks:
-      - nodejs_network
-    depends_on:
-      - mongodb  # Optional: Only if using MongoDB
-
-  mongodb:  # Example MongoDB service (add if needed)
+  mongodb:
     image: mongo:latest
-    container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb_data:/data/db
-    networks:
-      - nodejs_network
 
-networks:
-  nodejs_network:
-    driver: bridge
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    depends_on:
+      - mongodb
+
+  node-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: mongodb
+    depends_on:
+      - mongodb
 
 volumes:
-  mongodb_data:  # Persist MongoDB data
+  mongodb_data:
