@@ -1,20 +1,7 @@
-# Use official Node.js image
-FROM node:latest
-
-# Set working directory
+FROM node:16-alpine
 WORKDIR /app
-
-# Copy package.json and package-lock.json before installing dependencies
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install --production
-
-# Copy the rest of the project files
+RUN npm install --production  # Install only production deps
 COPY . .
-
-# Expose the app's port
 EXPOSE 3000
-
-# Start the application
-ENTRYPOINT ["npm", "start"]
+CMD ["npm", "start"]
